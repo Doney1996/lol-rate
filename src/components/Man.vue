@@ -3,11 +3,43 @@
 
 
     <div style="float: left;width: 500px">
+
+      <div style="height: 300px;padding-top: 20px;padding-bottom: 20px">
+        <div ><a style="font-size: 30px">最新战绩 </a><el-button style="margin-left: 5px" @click="getResult();getHero()" size="mini" icon="el-icon-refresh-right" type="primary" round>刷新</el-button></div>
+        <el-table :data="lastResult" style="width: 80%">
+          <el-table-column
+            type="index"
+            width="20">
+          </el-table-column>
+          <el-table-column
+            prop="name"
+            label="英雄"
+            width="120">
+          </el-table-column>
+          <el-table-column
+            prop="score"
+            label="评分"
+            width="80">
+          </el-table-column>
+          <el-table-column
+            prop="sub_score"
+            label="得分"
+            width="80">
+          </el-table-column>
+          <el-table-column
+            prop="sub_total"
+            :formatter='handleSubTotal'
+            label="结算" width="120">
+          </el-table-column>
+        </el-table>
+
+      </div>
+
       <h3 >英雄层级排行榜</h3>
       <el-table :data="heroList">
         <el-table-column
           type="index"
-          width="50">
+          width="20">
         </el-table-column>
         <el-table-column
           prop="name"
@@ -92,6 +124,7 @@
     <el-dialog
       title="提示"
       :visible.sync="showJieSuan"
+      :close-on-click-modal="false"
       width="80%">
       <div style="height: 400px">
       <div style="float: left;right: 100px">
@@ -196,9 +229,7 @@
       </div>
       </div>
       <span slot="footer" class="dialog-footer" >
-    <el-button @click="dialogVisible = false">取 消</el-button>
     <el-button @click="resetAll">重置所有英雄</el-button>
-    <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
   </span>
     </el-dialog>
 
@@ -214,9 +245,10 @@ export default {
   data () {
     return {
       position:-1,
-      showHero:0,
+      showHero:1,
       selectTier:0,
-      rootPath:'http://119.45.13.75:8080',
+     // rootPath:'http://114.96.105.111:9999',
+      rootPath:'http://localhost:8080',
       mini:['medium','mini','mini','mini','mini','mini'],
       p1:null,
       p2:null,
@@ -230,6 +262,7 @@ export default {
       p5hero:null,
       showJieSuan: false,
 
+      lastResult:[],
       filterOptions: [
         {label: "全部", value: 0},
         {label: "可用", value: 1},
@@ -259,7 +292,9 @@ export default {
   },
   created() {
    this.getHero()
+    this.getResult()
     setInterval(this.getHero,30000);
+    setInterval(this.getResult,30000);
   },
   watch:{
     selectTier(){
@@ -278,6 +313,9 @@ export default {
     },
     handleTier(row,cellValue){
     return 'T' + row.tier
+    },
+    handleSubTotal(row,cellValue){
+      return  '¥  ' + row.sub_total
     },
     filter(){
       let position = this.position;
@@ -389,6 +427,12 @@ export default {
       return array.sort((item1,item2)=>{
           return item1.index - item2.index
         })
+    },
+    getResult(){
+      let that = this
+      axios.get(this.rootPath + '/v1/recent').then(res=>{
+        that.lastResult = res.data
+      })
     },
     getHero() {
       let loading = Loading.service({ fullscreen: true });
