@@ -129,10 +129,16 @@
       <div style="height: 400px">
       <div style="float: left;right: 100px">
 
+        <div>
+          <el-button @click="selectPlayerShow = true">服务器查询</el-button>
+
+        </div>
       <div>
         价格：{{price + ' RMB'}}<el-slider v-model="price"  style="width: 300px"></el-slider>
 
       </div>
+
+
       <div>
         <el-input v-model="p1" placeholder="评分" style="width: 100px"></el-input>
         <el-select v-model="p1hero" filterable placeholder="请选择">
@@ -233,6 +239,28 @@
   </span>
     </el-dialog>
 
+
+
+    <el-dialog
+      title="提示"
+      :close-on-click-modal="false"
+      width="80%"
+      :visible.sync="selectPlayerShow"
+    >
+      <div width="80%">
+        <el-select v-model="selectPlayers" multiple placeholder="请选择玩家" width="80%">
+          <el-option
+            v-for="item in players"
+            :key="item.id"
+            :label="item.game_name"
+            :value="item.id">
+          </el-option>
+        </el-select>
+      </div>
+
+      <el-button @click="queryWegame()">查询</el-button>
+
+    </el-dialog>
   </div>
 </template>
 
@@ -247,8 +275,8 @@ export default {
       position:-1,
       showHero:1,
       selectTier:0,
-     // rootPath:'http://114.96.105.111:9999',
-      rootPath:'http://localhost:8080',
+     rootPath:'http://114.96.105.111:9999',
+      //rootPath:'http://localhost:8080',
       mini:['medium','mini','mini','mini','mini','mini'],
       p1:null,
       p2:null,
@@ -261,6 +289,7 @@ export default {
       p4hero:null,
       p5hero:null,
       showJieSuan: false,
+      selectPlayerShow: false,
 
       lastResult:[],
       filterOptions: [
@@ -281,7 +310,16 @@ export default {
       hideList:[],
       top:[],
       result:[],
-      price:10
+      price:10,
+      selectPlayers:[1,3,4],
+      players:[
+        {id:1,game_name:"碧血葬香魂"},
+        {id:2,game_name:"为什么顽固而专一"},
+        {id:3,game_name:"123456789LIRUI"},
+        {id:4,game_name:"shamer"},
+        {id:5,game_name:"桐汪汪的小太阳"},
+      ],
+      battles:[]
     }
   },
   computed: {
@@ -305,6 +343,57 @@ export default {
     }
   },
   methods:{
+
+    queryWegame(){
+      let that = this
+      that.battles = []
+      axios.post(this.rootPath +"/v1/rpc_wegame",this.selectPlayers).then(res=>{
+        that.battles = res.data
+        that.selectPlayerShow = false
+
+        let gameId = ""
+        let ww = false
+        that.battles.forEach(ele=>{
+           if(gameId===""){
+             gameId = ele.game_id
+           }else{
+             if (gameId !== ele.game_id) {
+               ww = true
+             }
+           }
+        })
+
+        if (ww){
+          alert('不在一个对局！')
+        }
+
+        res.data.forEach((ele,i)=>{
+          let heroId = ele.champion_id
+          let score = (ele.game_score / 10000).toFixed(1)
+          if (i===0){
+            that.p1hero = heroId
+            that.p1 = score
+          }
+          if (i===1){
+            that.p2hero = heroId
+            that.p2 = score
+          }
+          if (i===2){
+            that.p3hero = heroId
+            that.p3 = score
+          }
+          if (i===3){
+            that.p4hero = heroId
+            that.p4 = score
+          }
+          if (i===4){
+            that.p5hero = heroId
+            that.p5 = score
+          }
+        })
+      })
+    }
+    ,
     dealBtn(index){
       this.mini = this.mini.map(item=>{
         return 'mini'
@@ -328,9 +417,7 @@ export default {
       if (this.showHero !== 0){
         filter = filter.filter(item=> item.disable === !(this.showHero === 1))
       }
-      console.log(filter)
       filter = filter.filter(item=> item.tier >= this.selectTier )
-      console.log(filter)
       this.showList = filter
     },
     resetAll(){
