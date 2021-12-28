@@ -39,17 +39,17 @@
       <el-table :data="heroList">
         <el-table-column
           type="index"
-          width="20">
+          width="50">
         </el-table-column>
         <el-table-column
           prop="name"
           label="英雄"
-          width="100">
+          width="130">
         </el-table-column>
         <el-table-column
           prop="count"
-          label="登场次数"
-          width="100">
+          label="场次"
+          width="80">
         </el-table-column>
         <el-table-column
           :formatter='handleTier'
@@ -235,7 +235,7 @@
       </div>
       </div>
       <span slot="footer" class="dialog-footer" >
-    <el-button @click="resetAll">重置所有英雄</el-button>
+
   </span>
     </el-dialog>
 
@@ -248,14 +248,17 @@
       :visible.sync="selectPlayerShow"
     >
       <div width="80%">
-        <el-select v-model="selectPlayers" multiple placeholder="请选择玩家" width="80%">
-          <el-option
-            v-for="item in players"
-            :key="item.id"
-            :label="item.game_name"
-            :value="item.id">
-          </el-option>
-        </el-select>
+        <el-checkbox-group v-model="selectPlayers" @change="handleChecked">
+          <el-checkbox v-for="p in players" :label="p.id" :key="p.id">{{p.game_name}}</el-checkbox>
+        </el-checkbox-group>
+<!--        <el-select v-model="selectPlayers" multiple placeholder="请选择玩家" width="80%">-->
+<!--          <el-option-->
+<!--            v-for="item in players"-->
+<!--            :key="item.id"-->
+<!--            :label="item.game_name"-->
+<!--            :value="item.id">-->
+<!--          </el-option>-->
+<!--        </el-select>-->
       </div>
 
       <el-button @click="queryWegame()">查询</el-button>
@@ -275,8 +278,8 @@ export default {
       position:-1,
       showHero:1,
       selectTier:0,
-     rootPath:'http://114.96.105.111:9999',
-      //rootPath:'http://localhost:8080',
+      rootPath:'http://114.96.105.111:9999',
+      //rootPath:'http://localhost:9999',
       mini:['medium','mini','mini','mini','mini','mini'],
       p1:null,
       p2:null,
@@ -311,7 +314,7 @@ export default {
       top:[],
       result:[],
       price:10,
-      selectPlayers:[1,3,4],
+      selectPlayers:[],
       players:[
         {id:1,game_name:"碧血葬香魂"},
         {id:2,game_name:"为什么顽固而专一"},
@@ -331,6 +334,7 @@ export default {
   created() {
    this.getHero()
     this.getResult()
+    this.queryPlayer()
     setInterval(this.getHero,30000);
     setInterval(this.getResult,30000);
   },
@@ -343,7 +347,16 @@ export default {
     }
   },
   methods:{
-
+    handleChecked(res){
+      console.log(res)
+    },
+    queryPlayer() {
+      let that = this
+      axios.get(this.rootPath + '/v1/user').then(res=>{
+          that.players = res.data
+        }
+      )
+    },
     queryWegame(){
       let that = this
       that.battles = []
