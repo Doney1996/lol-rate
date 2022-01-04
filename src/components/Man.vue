@@ -113,8 +113,9 @@
 
     </div>
     <div>
-      <div class="hero"   :class="{gray:item.disable}" :key="item.index" v-for="item in showList" :style="{'backgroundPosition':('0px -'+ item.y+'px')}">
+      <div @dblclick="copy(item.name)" class="hero"   :class="{gray:item.disable}" :key="item.index" v-for="item in showList" :style="{'backgroundPosition':('0px -'+ item.y+'px')}">
             <div class="hero-name">{{item.name}}</div>
+            <div class="hero-sum">¥{{item.sum}}元</div>
       </div>
 
     </div>
@@ -264,22 +265,27 @@
       <el-button @click="queryWegame()">查询</el-button>
 
     </el-dialog>
+    <a :data-clipboard-text="copyName" class="icon-copy"></a>
+
   </div>
 </template>
-
 <script>
 import axios from 'axios';
 import { Loading } from 'element-ui';
+import Clipboard from 'clipboard'
+
+
 
 export default {
   name: 'HelloWorld',
   data () {
     return {
+      copyName:'',
       position:-1,
       showHero:1,
       selectTier:0,
       rootPath:'http://114.96.105.111:9999',
-      //rootPath:'http://localhost:9999',
+      // rootPath:'http://localhost:9999',
       mini:['medium','mini','mini','mini','mini','mini'],
       p1:null,
       p2:null,
@@ -325,6 +331,12 @@ export default {
       battles:[]
     }
   },
+  mounted(){
+    const clipboard = new Clipboard('.icon-copy');
+    clipboard.on('success', e => {
+      this.$message.success(e.text + ' 已复制到剪贴板！');
+    });
+  },
   computed: {
     canSelectHero: function () {
       // `this` 指向 vm 实例
@@ -347,6 +359,21 @@ export default {
     }
   },
   methods:{
+    copy(name){
+      let that = this
+      this.$copyText(name).then( e => {
+        that.$notify({
+          title: '成功',
+          message: '复制:'+name,
+          type: 'success'
+        })
+      }, function (e) {
+        alert('复制失败')
+        console.log(e)
+      })
+
+
+    },
     handleChecked(res){
       console.log(res)
     },
@@ -586,7 +613,16 @@ export default {
   background-repeat: no-repeat;
 }
 .hero-name{
-  width:82px;color:white;background-color: rgba(147,147,147,0.62)
+  width: 82px;
+  color: white;
+  background-color: rgba(147, 147, 147, 0.62);
+  font-size: 8px;
+}
+.hero-sum{
+  width: 82px;
+  color: #c4baba;
+  background-color: rgba(147, 147, 147, 0.62);
+  font-size: 8px;
 }
 h1, h2 {
   font-weight: normal;

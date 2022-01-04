@@ -80,7 +80,7 @@
 <script>
 import axios from "axios";
 import qs from 'qs';
-//let  rootPath = 'http://localhost:9999'
+// let  rootPath = 'http://localhost:9999'
 let  rootPath = 'http://114.96.105.111:9999'
 export default {
   name: 'HelloWorld',
@@ -110,7 +110,7 @@ export default {
   },
   methods:{
     resetAll(){
-      axios.post(this.rootPath +"/v1/enable").then(res=>{
+      axios.post(rootPath +"/v1/enable").then(res=>{
         alert("重置成功")
       })
     },
